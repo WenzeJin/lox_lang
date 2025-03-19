@@ -1,0 +1,29 @@
+name: Maven Test for subproject jlox
+
+on:
+  push:
+    branches:
+      - main   # 可以指定其他分支
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 23
+        uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Maven tests
+        run: |
+          cd jlox   # 进入 jlox 项目目录
+          mvn test
