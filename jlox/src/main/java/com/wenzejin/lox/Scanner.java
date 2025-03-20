@@ -21,6 +21,13 @@ public class Scanner {
         this.source = source;
     }
 
+    public void reset() {
+        start = 0;
+        current = 0;
+        line = 1;
+        column = 1;
+    }
+
     public List<Token> getAllTokens() {
         List<Token> tokens = new ArrayList<>();
         while (!isAtEnd()) {
@@ -80,18 +87,40 @@ public class Scanner {
             case '*':
                 token = genToken(STAR, null);
                 break;
+            case '!':
+                token = genToken(match('=') ? BANG_EQUAL : BANG, null);
+                break;
+            case '=':
+                token = genToken(match('=') ? EQUAL_EQUAL : EQUAL, null);
+                break;
+            case '<':
+                token = genToken(match('=') ? LESS_EQUAL : LESS, null);
+                break;
+            case '>':
+                token = genToken(match('=') ? GREATER_EQUAL : GREATER, null);
+                break;
+            case '/':
+                if (match('/')) {
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    token = genToken(SLASH, null);
+                }
+                break;
+            case '"':
+                token = string();
+                break;
             case ' ':
             case '\r':
             case '\t':
+                column++;
                 break;
             case '\n':
                 line++;
-                column = 1;
+                column = 1;     // column is incremented at the end of the method
                 break;
             default:
-                LoxError.error(getSourceLine(), line, column, "Unexpected character: " + c);
+                LoxError.error(getSourceLine(), line, column - 1, "Unexpected character: " + c);
         }
-        column++;
         return token;
     }
 
@@ -100,15 +129,56 @@ public class Scanner {
         return source.charAt(current++);
     }
 
+    private boolean match(char expected) {
+        if (isAtEnd()) return false;
+        if (source.charAt(current) != expected) return false;
+
+        current++;
+        return true;
+    }
+
     private char peek() {
-        if (isAtEnd()) {
-            return '\0';
-        } else {
-            return source.charAt(current);
+        if (isAtEnd()) return '\0';
+        return source.charAt(current);
+    }
+
+    private Token string() {
+        int oldColumn = column;
+        int oldLine = line;
+        int realColumn = column;
+        while (peek() != '"' && !isAtEnd()) {
+
+            if (peek() == '\n') {
+                line++;
+                realColumn = 0;
+            }
+            advance();
+            realColumn++;
         }
+
+        if (isAtEnd()) {
+            LoxError.error(line, "Unterminated string.");
+            return null;
+        }
+
+        // The closing ".
+        advance();
+        realColumn++;
+        // Trim the surrounding quotes.
+        String value = source.substring(start + 1, current - 1);
+        Token token = genToken(STRING, value, oldLine, oldColumn);
+        column = realColumn;
+        return token;
     }
 
     private Token genToken(TokenType type, Object literal) {
+        String text = source.substring(start, current);
+        Token token = new Token(type, text, literal, line, column);
+        column += text.length();
+        return token;
+    }
+
+    private Token genToken(TokenType type, Object literal, int line, int column) {
         String text = source.substring(start, current);
         return new Token(type, text, literal, line, column);
     }
@@ -124,6 +194,5 @@ public class Scanner {
         }
         return source.substring(lineStart, lineEnd);
     }
-
 
 }

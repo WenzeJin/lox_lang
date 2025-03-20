@@ -14,7 +14,7 @@ public class Lox {
     }
 
     public static void runPrompt() throws IOException {
-        String greeting = "Welcome to Lox! Implemented by Wenze Jin. \n Version 0.1.0";
+        String greeting = "Welcome to Lox! Implemented by Wenze Jin. \nVersion 0.1.0";
         System.out.println(greeting);
 
         InputStreamReader isr = new InputStreamReader(System.in);
@@ -32,6 +32,8 @@ public class Lox {
     }
 
     private static void run(String source) {
-
+        Scanner scanner = new Scanner(source);
+        scanner.reset();
+        scanner.getAllTokens().forEach(System.out::println);
     }
 }

@@ -15,12 +15,12 @@ public class LoxError {
     }
 
     private static void report(int line, String prefix, String message) {
-        System.err.println( "Error " + prefix + " at line " + line + " : " + message);
+        System.err.println( "Error " + prefix + "at line " + line + " : " + message);
     }
 
     private static void report(String source, int line, int column, String prefix, String message) {
-        System.err.println( "Error " + prefix + " at line " + line + " : " + message);
+        System.err.println( "Error " + prefix + "at line " + line + " : " + message);
         System.err.println("\t" + line + "| " + source);
-        System.err.println("\t" + " ".repeat(column) + "^");
+        System.err.println("\t" + " ".repeat(column + 2) + "^");
     }
 }
